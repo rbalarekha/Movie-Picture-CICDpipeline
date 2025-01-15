@@ -19,3 +19,4 @@ spec:
           image: 817294483355.dkr.ecr.us-east-1.amazonaws.com/frontend:build_image
           ports:
             - containerPort: 3000
+            
