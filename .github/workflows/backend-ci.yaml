@@ -60,7 +60,7 @@ jobs:
        
      - name: Run tests
        run: |
-           pipenv install --dev
+           pipenv install --dev --pre
            pip install pytest
            pip install flask 
            pip install flask_cors
