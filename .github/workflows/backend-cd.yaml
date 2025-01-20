@@ -59,6 +59,7 @@ jobs:
        
      - name: Run tests
        run: |
+           pipenv sync --python=/path/to/location/python
            pipenv install --dev
            pip install pytest
            pip install flask 
