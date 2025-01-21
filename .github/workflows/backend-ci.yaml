@@ -1,10 +1,14 @@
 
+
 name: backend
 on:
   pull_request:
     branches:
       - main
- 
+    paths:
+      - 'starter/backend/**' # Trigger on backend code changes
+  workflow_dispatch:
+
 jobs:
   Lint_Job:
     runs-on: ubuntu-latest
@@ -27,7 +31,7 @@ jobs:
       - name: Set up Python environment
         uses: actions/setup-python@v4
         with:
-          python-version: "3.x"   
+          python-version: "3.9.20"   
         
       - name: flake8 Lint
         uses: py-actions/flake8@v2
@@ -53,13 +57,14 @@ jobs:
      - name: Set up Python environment
        uses: actions/setup-python@v4
        with:
-          python-version: "3.x"
+          python-version: "3.9.20"
 
      - name: Install pipenv
        run: pip install pipenv
        
      - name: Run tests
        run: |
+           cd starter/backend
            pip install pipenv
            pipenv --python path/to/python3.9.20
            pipenv install --dev
@@ -86,7 +91,7 @@ jobs:
     - name: Build Docker Image
       run: |
           echo Building the Docker image...          
-          docker build -t build_image .     
+          docker build -t build-image .     
  
    
   
