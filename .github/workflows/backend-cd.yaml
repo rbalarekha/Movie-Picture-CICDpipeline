@@ -99,7 +99,7 @@ jobs:
         IMAGE_TAG: build_image
        run: |
         docker build -t backend .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+       # docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
      - name: Update kube config
        run: aws eks update-kubeconfig --name cluster --region us-east-1
