@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-  
+      
 jobs:
   Lint_Job:
     runs-on: ubuntu-latest
@@ -59,7 +59,6 @@ jobs:
        
      - name: Run tests
        run: |
-           pip install pipenv
            pipenv install --dev
            pip install pytest
            pip install flask 

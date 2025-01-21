@@ -1,9 +1,10 @@
+
 name: backend
 on:
   pull_request:
     branches:
       - main
-
+ 
 jobs:
   Lint_Job:
     runs-on: ubuntu-latest
@@ -59,8 +60,6 @@ jobs:
        
      - name: Run tests
        run: |
-           pip install pipenv
-           pipenv --python path/to/python3.9.20
            pipenv install --dev
            pip install pytest
            pip install flask 
@@ -85,7 +84,7 @@ jobs:
     - name: Build Docker Image
       run: |
           echo Building the Docker image...          
-          docker build -t build-image .     
+          docker build -t build_image .     
  
    
   
