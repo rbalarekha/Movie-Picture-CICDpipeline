@@ -98,8 +98,8 @@ jobs:
         ECR_REPOSITORY: backend
         IMAGE_TAG: build_image
        run: |
-        docker build -t $TAGGED_IMAGE .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker build -t backend .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:build_image
 
      - name: Update kube config
        run: aws eks update-kubeconfig --name cluster --region us-east-1
@@ -107,7 +107,7 @@ jobs:
      - name: Deploy to EKS
        run: |
             cd "./k8s/"
-            kustomize edit set image backend=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            kustomize edit set image backend=$ECR_REGISTRY/$ECR_REPOSITORY:build_image
             kustomize build | kubectl apply -f -
             kubectl get svc
             kubectl get pods 
