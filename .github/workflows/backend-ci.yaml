@@ -84,7 +84,7 @@ jobs:
     - name: Build Docker Image
       run: |
           echo Building the Docker image...          
-          docker build -t build-image .     
+          docker build -t build_image .     
  
    
   
