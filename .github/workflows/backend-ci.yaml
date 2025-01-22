@@ -65,12 +65,12 @@ jobs:
           python-version: "3.10"      
     
       - name: Build Docker Image	  
-          run: |
-            cd starter/backend
-            IMAGE_TAG="${{ secrets.AWS_ECR_REPOSITORY_Backend  }}:${{ github.sha }}"
-            IMAGE_TAG_LOWERCASE=$(echo $IMAGE_TAG | tr '[:upper:]' '[:lower:]')
-            docker build -t "$IMAGE_TAG_LOWERCASE" -f Dockerfile .
-            docker tag "$IMAGE_TAG_LOWERCASE" "${{ secrets.AWS_ECR_REPOSITORY_Backend }}:latest".     
+        run: |
+          cd starter/backend
+          IMAGE_TAG="${{ secrets.AWS_ECR_REPOSITORY_Backend  }}:${{ github.sha }}"
+          IMAGE_TAG_LOWERCASE=$(echo $IMAGE_TAG | tr '[:upper:]' '[:lower:]')
+          docker build -t "$IMAGE_TAG_LOWERCASE" -f Dockerfile .
+          docker tag "$IMAGE_TAG_LOWERCASE" "${{ secrets.AWS_ECR_REPOSITORY_Backend }}:latest".     
     
      
     
