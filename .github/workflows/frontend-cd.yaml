@@ -23,14 +23,14 @@ jobs:
       - name: Use Node.js 
         uses: actions/setup-node@v4
         with:
-         node-version: 18
+          node-version: 18
         
       - name: Cache dependencies
         id: cache
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+          key: deps-node-modules-${{ hashFiles('starter/frontend/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-modules-
              
