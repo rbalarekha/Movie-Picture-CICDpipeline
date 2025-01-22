@@ -159,6 +159,7 @@ jobs:
       - name: Set up kubectl for EKS
         run: |
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name cluster
+          kubectl get pods
   
       - name: Deploy Kubernetes
         run: |
