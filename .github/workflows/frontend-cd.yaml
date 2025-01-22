@@ -8,10 +8,6 @@ on:
 jobs:
   Lint_Job:
     runs-on: ubuntu-latest
-    defaults:  
-     run:
-      shell: bash
-      working-directory: ./starter/frontend
 
     steps:
       - name: Check out repository
@@ -27,7 +23,7 @@ jobs:
       - name: Use Node.js 
         uses: actions/setup-node@v4
         with:
-         node-version: latest
+         node-version: 18
         
       - name: Cache dependencies
         id: cache
@@ -35,93 +31,122 @@ jobs:
         with:
          path: ~/.npm
          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+         restore-keys: |
+            ${{ runner.os }}-node-modules-
              
       - name: Install dependencies
-        run:  npm ci
+        run:  cd starter/frontend && npm ci
 
       - name: Run Lint 
-        run: npm run lint
+        run: cd starter/frontend && npm run lint
  
   TEST_JOB: 
     runs-on: ubuntu-latest
-    defaults:  
-     run:
-      shell: bash
-      working-directory: ./starter/frontend
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-    - name: Use Node.js 
-      uses: actions/setup-node@v4
-      with:
-         node-version: latest
+      - name: Use Node.js 
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
         
-    - name: Cache dependencies
-      id: cache
-      uses: actions/cache@v3
-      with:
-         path: ~/.npm
-         key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
              
-    - name: Install dependencies
-      run:  npm ci
+      - name: Install dependencies
+        run:  cd starter/frontend && npm ci
 
-    - name: Run Lint 
-      run: npm run test
+      - name: Run Lint 
+        run: cd starter/frontend && npm run test
 
   BUILD_JOB: 
     runs-on: ubuntu-latest
     needs: [Lint_Job, TEST_JOB]
-    defaults:  
-     run:
-      shell: bash
-      working-directory: ./starter/frontend
     
     steps:
-     - name: Check out code
-       uses: actions/checkout@v2
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Fix permissions for react-scripts
+        run: |
+          cd starter/frontend
+          chmod +x node_modules/.bin/react-scripts
+      - name: Build Frontend Application
+        run: cd starter/frontend && npm run build
     
-     - name: Configure AWS credentials
-       uses: aws-actions/configure-aws-credentials@v1
-       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
         
-     - name: Login to Amazon ECR
-       id: login-ecr
-       uses: aws-actions/amazon-ecr-login@v1
-       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-     - name: Build, tag, and push image to Amazon ECR
-       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: frontend
-        IMAGE_TAG: build_image
-        REACT_APP_MOVIE_API_URL: ${{ secrets.REACT_APP_MOVIE_API_URL }}
-       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --build-arg="REACT_APP_MOVIE_API_URL=$REACT_APP_MOVIE_API_URL"
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      - name: Build, tag, and push image to Amazon ECR
+        run: |
+          IMAGE_TAG="${{ secrets.AWS_ECR_REPOSITORY }}:${{ github.sha }}"
+          IMAGE_TAG_LOWERCASE=$(echo $IMAGE_TAG | tr '[:upper:]' '[:lower:]')
+          docker build -t "$IMAGE_TAG_LOWERCASE" -f starter/frontend/Dockerfile frontend --build-arg REACT_APP_MOVIE_API_URL="${{ secrets.REACT_APP_MOVIE_API_URL }}"
+          docker tag "$IMAGE_TAG_LOWERCASE" "${{ secrets.AWS_ECR_REPOSITORY }}:latest"
 
-     - name: Update kube config
-       run: aws eks update-kubeconfig --name cluster --region us-east-1
+      - name: Push Docker image to ECR 
+        run: |
+          IMAGE_TAG="${{ secrets.AWS_ECR_REPOSITORY }}:${{ github.sha }}"
+          IMAGE_TAG_LOWERCASE=$(echo $IMAGE_TAG | tr '[:upper:]' '[:lower:]')
+          docker push "$IMAGE_TAG_LOWERCASE"
+          docker push "${{ secrets.AWS_ECR_REPOSITORY }}:latest"    
 
-     - name: Deploy to EKS
-       run: |
-            cd "./k8s/"
-            kustomize edit set image frontend=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-            kustomize build | kubectl apply -f -
-            kubectl get svc
-            kubectl get pods 
- 
+  DEPLOY_JOB:
+    needs:
+      - BUILD_JOB
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Download kubectl binaries
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          
+      - name: Install Kubectl
+        run: |
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          kubectl version --client
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+       - name: Set up kubectl for EKS
+         run: |
+           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name cluster
+
+       - name: Deploy to Kubernetes
+         run: |
+           cd starter/frontend
+           kubectl apply -k k8s/ 
+
