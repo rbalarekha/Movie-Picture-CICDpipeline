@@ -141,12 +141,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-       - name: Set up kubectl for EKS
-         run: |
-           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name cluster
+      - name: Set up kubectl for EKS
+        run: |
+          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name cluster
 
-       - name: Deploy to Kubernetes
-         run: |
-           cd starter/frontend
-           kubectl apply -k k8s/ 
-
+      - name: Deploy to Kubernetes
+        run: |
+          cd starter/frontend
+          kubectl apply -k k8s/ 
