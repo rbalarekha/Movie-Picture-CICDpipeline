@@ -33,13 +33,11 @@ jobs:
 
       - name: Install pipenv
         run: |
-          cd starter/backend
           pip install pipenv
           pipenv install --dev
           
       - name: Run linter
         run: |
-          cd starter/backend
           pipenv run lint
   
   
@@ -68,13 +66,11 @@ jobs:
 
       - name: install pipenv
         run: |
-          cd starter/backend
           pip install pipenv
           pipenv install --dev
 
       - name: Run tests
         run: |
-          cd starter/backend
           pipenv run test
 
   BUILD_JOB:
