@@ -48,7 +48,8 @@ jobs:
        run: |
            cd starter/backend
            python -m pip install --upgrade pip
-           pip install pipenv
+           pip install pipenv --upgrade
+           pipenv lock
            pipenv install --dev
        
      - name: Run tests
