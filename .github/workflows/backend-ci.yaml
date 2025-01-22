@@ -8,85 +8,68 @@ on:
 jobs:
   Lint_Job:
     runs-on: ubuntu-latest
-    defaults:  
-     run:
-      shell: bash
-      working-directory: ./starter/backend
 
     steps:
       - name: Check out source repository
         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1  
-
       - name: Set up Python environment
         uses: actions/setup-python@v4
         with:
-          python-version: "3.x"   
+          python-version: "3.10"   
         
       - name: flake8 Lint
-        uses: py-actions/flake8@v2
+        id: lint
+        run: cd starter/backend &&  pipenv run flake8 --max-line-length=120
+        continue-on-error: false
+        
+      - name: Install pipenv
+        run: |
+           cd starter/backend
+           python -m pip install --upgrade pip
+           pip install pipenv
+           pipenv install --dev
 
   TEST_JOB: 
    runs-on: ubuntu-latest
-   defaults:  
-     run:
-      shell: bash
-      working-directory: ./starter/backend
       
    steps:
      - name: Check out source repository
-       uses: actions/checkout@v3
-
-     - name: Configure AWS credentials
-       uses: aws-actions/configure-aws-credentials@v2
-       with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1  
+       uses: actions/checkout@v3 
 
      - name: Set up Python environment
        uses: actions/setup-python@v4
        with:
-          python-version: "3.x"
+          python-version: "3.10"
 
      - name: Install pipenv
        run: |
+           cd starter/backend
+           python -m pip install --upgrade pip
            pip install pipenv
-           pipenv --python /usr/bin/python3
            pipenv install --dev
        
      - name: Run tests
-       run: |
-           pip install pytest
-           pip install flask 
-           pip install flask_cors
-           pytest test_app.py 
+       run: cd starter/backend && pipenv run pytest --maxfail=1 --disable-warnings -q 
           
   BUILD_JOB: 
     runs-on: ubuntu-latest
     needs: [Lint_Job, TEST_JOB]
-    defaults:  
-     run:
-      shell: bash
-      working-directory: ./starter/backend
-
     steps:
     - name: Check out repository
       uses: actions/checkout@v4
-    - name: list
-      run: |
-          pwd
-          ls -lrth
-    - name: Build Docker Image
-      run: |
-          echo Building the Docker image...          
-          docker build -t build-image .     
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"      
+
+    - name: Build Docker Image	  
+        run: |
+          cd starter/backend
+          IMAGE_TAG="${{ secrets.AWS_ECR_REPOSITORY_Backend  }}:${{ github.sha }}"
+          IMAGE_TAG_LOWERCASE=$(echo $IMAGE_TAG | tr '[:upper:]' '[:lower:]')
+          docker build -t "$IMAGE_TAG_LOWERCASE" -f Dockerfile .
+          docker tag "$IMAGE_TAG_LOWERCASE" "${{ secrets.AWS_ECR_REPOSITORY_Backend }}:latest".     
  
    
   
