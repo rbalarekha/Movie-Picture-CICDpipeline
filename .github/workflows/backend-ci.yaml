@@ -58,7 +58,7 @@ jobs:
      - name: Install pipenv
        run: |
            pip install pipenv
-           pipenv --python path/to/python3
+           pipenv --python /usr/bin/python3
            pipenv install --dev
        
      - name: Run tests
