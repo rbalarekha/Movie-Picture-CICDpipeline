@@ -155,16 +155,8 @@ jobs:
       - name: Set up kubectl for EKS
         run: |
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name cluster
-     
-      - name: Deploy to Kubernetes
+  
+      - name: Deploy Kubernetes
         run: |
           cd starter/backend
-          kubectl apply -k k8s/    
-
-      - name: Deploy to EKS
-        run: |
-          cd "./k8s/"
-          kustomize edit set image backend=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          kustomize build | kubectl apply -f -
-          kubectl get svc
-          kubectl get pods 
+          kubectl apply -k k8s/ 
