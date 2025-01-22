@@ -29,9 +29,9 @@ jobs:
         id: cache
         uses: actions/cache@v3
         with:
-         path: ~/.npm
-         key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
-         restore-keys: |
+          path: ~/.npm
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
             ${{ runner.os }}-node-modules-
              
       - name: Install dependencies
@@ -71,7 +71,7 @@ jobs:
         run:  cd starter/frontend && npm ci
 
       - name: Run Lint 
-        run: cd starter/frontend && npm run test
+        run:  cd starter/frontend && npm run test
 
   BUILD_JOB: 
     runs-on: ubuntu-latest
@@ -121,6 +121,7 @@ jobs:
     needs:
       - BUILD_JOB
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
