@@ -27,7 +27,7 @@ jobs:
       - name: Set up Python environment
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"   
+          python-version: "3.x"   
         
       - name: flake8 Lint
         uses: py-actions/flake8@v2
@@ -53,7 +53,7 @@ jobs:
      - name: Set up Python environment
        uses: actions/setup-python@v4
        with:
-          python-version: "3.11"
+          python-version: "3.x"
 
      - name: Install pipenv
        run: |
