@@ -158,6 +158,7 @@ jobs:
      
       - name: Set up kubectl for EKS
         run: |
+          aws iam list-access-keys --username github-action-user
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name cluster
           kubectl get pods
   
