@@ -145,35 +145,18 @@ jobs:
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
           kubectl version --client
           
-      - name: Configure AWS credentials
+      - name: Set up AWS credentials
         run: |
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV 
-
-      - name: Configure AWS CLI
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |         
-          aws --version  # Check if AWS CLI is installed  
-          aws sts get-caller-identity  
-          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set default.region us-east-1
-         # aws iam list-access-keys --username github-action-user
-
-
-     
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV  
+      # Configure kubectl to interact with the EKS cluster
       - name: Set up kubectl for EKS
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |          
+        run: |
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name cluster
-          kubectl get pods
   
-      - name: Deploy Kubernetes
+      # Deploy to Kubernetes
+      - name: Deploy to Kubernetes
         run: |
           cd starter/backend
-          kubectl apply -k k8s/ 
+          kubectl apply -k k8s/
