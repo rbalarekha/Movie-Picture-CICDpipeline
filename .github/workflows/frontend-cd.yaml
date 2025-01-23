@@ -81,9 +81,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
-
-      - name: Build Frontend Application
-        run: cd starter/frontend && npm run build
+     # - name: Fix permissions for react-scripts
+      #  run: |
+       #   cd starter/frontend
+        #  chmod +x node_modules/.bin/react-scripts
+     # - name: Build Frontend Application
+      #  run: cd starter/frontend && npm run build
     
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
