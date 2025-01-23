@@ -161,11 +161,14 @@ jobs:
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set default.region us-east-1
-          aws iam list-access-keys --username github-action-user
+         # aws iam list-access-keys --username github-action-user
 
 
      
       - name: Set up kubectl for EKS
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |          
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name cluster
           kubectl get pods
