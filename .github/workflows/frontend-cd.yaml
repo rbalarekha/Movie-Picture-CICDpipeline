@@ -107,7 +107,7 @@ jobs:
         run: |
           IMAGE_TAG="${{ secrets.AWS_ECR_REPOSITORY }}:${{ github.sha }}"
           IMAGE_TAG_LOWERCASE=$(echo $IMAGE_TAG | tr '[:upper:]' '[:lower:]')
-          docker build -t "$IMAGE_TAG_LOWERCASE" -f starter/frontend/Dockerfile frontend --build-arg REACT_APP_MOVIE_API_URL="${{ secrets.REACT_APP_MOVIE_API_URL }}"
+          docker build -t "$IMAGE_TAG_LOWERCASE" -f starter/frontend/Dockerfile starter/frontend --build-arg REACT_APP_MOVIE_API_URL="${{ secrets.REACT_APP_MOVIE_API_URL }}"
           docker tag "$IMAGE_TAG_LOWERCASE" "${{ secrets.AWS_ECR_REPOSITORY }}:latest"
 
       - name: Push Docker image to ECR 
