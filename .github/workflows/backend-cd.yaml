@@ -160,3 +160,5 @@ jobs:
         run: |
           cd starter/backend
           kubectl apply -k k8s/
+          kubectl get svc
+          kubectl get pods
